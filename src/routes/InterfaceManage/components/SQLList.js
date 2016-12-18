@@ -2,11 +2,12 @@ import React, {Component, PropTypes} from 'react';
 import { Table, Card, Icon } from 'antd';
 import IBDecorate from 'immutability';
 import Dimensions from 'react-dimensions';
+import { flattenDeep } from 'lodash';
 
 
 const columns = [
   { title: 'Group', dataIndex: 'name', key: 'name' },
-  { title: '调用次数', dataIndex: 'times', key: 'times' }
+  { title: 'Sql', dataIndex: 'Sql', key: 'Sql' }
 ];
 
 @IBDecorate
@@ -17,6 +18,20 @@ class GroupList extends Component {
       this.setState({
         fold: !this.getState('fold')
       });
+    };
+    this.initData = (data) => {
+      return flattenDeep(data.map(
+        (item, index) => {
+          let ret = [];
+          ret = item.map(
+            (v, k) => ({
+              name: k === 0 ? 'Group' + (index + 1) : '',
+              Sql: v
+            })
+          );
+          return ret;
+        }
+      ));
     };
   }
   state = {
@@ -35,7 +50,7 @@ class GroupList extends Component {
           size='middle'
           showHeader={false}
           columns={columns}
-          dataSource={this.props.data}
+          dataSource={this.initData(this.props.data)}
           className='table'
           style={{marginTop: '30px'}}
           pagination={false}

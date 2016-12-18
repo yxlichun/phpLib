@@ -29,79 +29,32 @@ class Graph extends Component {
       });
     };
     this.initOption = (data) => {
-      let categories = uniqBy(flattenDeep(map(data, (v, k) => [{name: k}, keys(v.group).map(o => ({name: o}))])), 'name');
-      let groupNodes = {};
-      let nodes = map(data, (v, k) => {
-        map(v.group, (_v, _k) => {
-          groupNodes[_k] = groupNodes[_k] ? groupNodes[_k] / 1 + _v : _v;
-        });
-        return {
-          name: k,
-          itemStyle: null,
-          value: v.count,
-          symbolSize: v.count / 10 < 10 ? 10 : v.count / 10,
-          category: findIndex(categories, o => o.name === k),
-          x: Math.random(),
-          y: Math.random()
-        };
-      });
-      nodes = nodes.concat(map(groupNodes, (v, k) => ({
-        name: k,
-        itemStyle: null,
-        value: v,
-        symbolSize: v / 10 < 10 ? 10 : v / 10,
-        category: findIndex(categories, o => o.name === k),
-        x: Math.random(),
-        y: Math.random()
-      })));
-      let categories_S = [
-        {
-          name: '辅助',
-          type: 'bar',
-          stack: '总量',
-          itemStyle: {
-              normal: {
-                  barBorderColor: 'rgba(0,0,0,0)',
-                  color: 'rgba(0,0,0,0)'
-                },
-              emphasis: {
-                  barBorderColor: 'rgba(0,0,0,0)',
-                  color: 'rgba(0,0,0,0)'
-                }
-            },
-          data: [0, 900, 1245, 1530, 1376, 1376, 1511, 1689, 1856, 1495, 1292]
-        },
-        {
-          name: '收入',
-          type: 'bar',
-          stack: '总量',
-          label: {
-              normal: {
-                  show: true,
-                  position: 'top'
-                }
-            },
-          data: [900, 345, 393, '-', '-', 135, 178, 286, '-', '-', '-']
-        },
-        {
-          name: '支出',
-          type: 'bar',
-          stack: '总量',
-          label: {
-              normal: {
-                  show: true,
-                  position: 'bottom'
-                }
-            },
-          data: ['-', '-', '-', 108, 154, '-', '-', '-', 119, 361, 203]
-        }
-      ];
       let categories_L = uniqBy(flattenDeep(map(data, (value) => {
-        return map(value.group, (v, k) => ({
+        return map(value.ral_log.group, (v, k) => ({
           name: k,
           icon: 'circle'
         }));
       })), 'name');
+      let ret = {};
+      for (let i = 0; i < categories_L.length; i++) {
+        ret[i.name] = map(data, (item) => item.ral_log.group[i.name] || 0);
+      }
+      let categories_S = ret.map((value, key) => ({
+        name: key,
+        type: 'bar',
+        stack: '总量',
+        itemStyle: {
+          normal: {
+            barBorderColor: 'rgba(0,0,0,0)',
+            color: 'rgba(0,0,0,0)'
+          },
+          emphasis: {
+            barBorderColor: 'rgba(0,0,0,0)',
+            color: 'rgba(0,0,0,0)'
+          }
+        },
+        data: value
+      }));
       return {
         tooltip: {},
         legend: {
@@ -125,13 +78,7 @@ class Graph extends Component {
         yAxis: {
           type: 'category',
           splitLine: {show: false},
-          data: (function (){
-                var list = [];
-                for (var i = 1; i <= 11; i++) {
-                    list.push('11月' + i + '日');
-                }
-                return list;
-            })()
+          data: data.map(value => value.api_path)
         },
         xAxis: {
           type: 'value'
@@ -182,7 +129,7 @@ class Graph extends Component {
           extra={<Icon onClick={this.handleClick} type={this.getState('fold') ? 'folder-open' : 'folder'} className='smaller' />}
           className={'animated ' + (this.getState('fold') ? 'slideLessRight' : 'slideLessLeft')}
         >
-          <span className='graph-title'><Icon className='smaller' type='share-alt' />接口名称</span>
+          <span className='graph-title'><Icon className='smaller' type='share-alt' />{'接口名称'}</span>
           <div className='graph' ref={(c) => { this.graph = c; }} style={{width: '95%', height: this.getState('fold') ? '300px' : '80px'}} />
         </Card>
       </ LazyLoad>
